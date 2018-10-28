@@ -6,49 +6,82 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tr.libir.springdemo.api.v1.dto.CityDTO;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/api/v1/city")
 public class RestDemo {
 
-    @GetMapping(value = "/{cityCode}")
-    private ResponseEntity<CityDTO> getCityByCidtyCode(@PathVariable("cityCode") int cityCode){
 
-        if (cityCode == 53){
-            CityDTO cityDTO = new CityDTO();
-            cityDTO.setCityCode(53);
-            cityDTO.setCityName("Rize");
-            cityDTO.setId(1L);
-            return ResponseEntity.ok(cityDTO);
-        }else if (cityCode == 34){
-            CityDTO cityDTO = new CityDTO();
-            cityDTO.setCityCode(34);
-            cityDTO.setCityName("İstanbul");
-            cityDTO.setId(2L);
-            return ResponseEntity.ok(cityDTO);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    private final List<CityDTO> cityList  = new ArrayList();//Çskma DB
+
+    RestDemo(){
+
+        CityDTO cityDTO = new CityDTO();
+        cityDTO.setCityCode(53);
+        cityDTO.setCityName("Rize");
+        cityDTO.setId(1L);
+
+        cityList.add(cityDTO);
+
+        cityDTO = new CityDTO();
+        cityDTO.setCityCode(34);
+        cityDTO.setCityName("İstanbul");
+        cityDTO.setId(2L);
+
+        cityList.add(cityDTO);
+
+
+        cityDTO = new CityDTO();
+        cityDTO.setCityCode(01);
+        cityDTO.setCityName("Ankara");
+        cityDTO.setId(3L);
+
+        cityList.add(cityDTO);
+
 
     }
 
-    @GetMapping(value = "/")
-    private ResponseEntity<CityDTO> getCityById(@RequestParam("id") int id){
-
-        if (id == 1){
-            CityDTO cityDTO = new CityDTO();
-            cityDTO.setCityCode(53);
-            cityDTO.setCityName("Rize");
-            cityDTO.setId(1L);
-            return ResponseEntity.ok(cityDTO);
-        }else if (id == 2){
-            CityDTO cityDTO = new CityDTO();
-            cityDTO.setCityCode(34);
-            cityDTO.setCityName("İstanbul");
-            cityDTO.setId(2L);
-            return ResponseEntity.ok(cityDTO);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    private CityDTO findByCityName(String cityName){
+        CityDTO result = null;
+        for (int i=0;i<=cityList.size();i++){
+            if (cityList.get(i).getCityName().equals(cityName)){
+                result = cityList.get(i);
+                break;
+            }
         }
+        return result;
+    }
+
+    private CityDTO findByCityName(int id) {
+        /**
+         * java 8 stream kullanımı
+         */
+        return cityList.stream().filter(c->c.getId()==id).findAny().orElse(null);
+    }
+
+    @GetMapping(value = "/")
+    private ResponseEntity<CityDTO> getCityByCityName(@RequestParam("cityName") String cityName){
+            System.out.println("city name :"+cityName);
+            CityDTO cityDTO = findByCityName(cityName);
+
+            if (cityDTO==null)
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<>(cityDTO,HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{id}")
+    private ResponseEntity<CityDTO> getCityById(@PathVariable("id") int id){
+
+        System.out.println("city id :"+id);
+        CityDTO cityDTO = findByCityName(id);
+
+        if (cityDTO==null)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<>(cityDTO,HttpStatus.OK);
 
     }
 
